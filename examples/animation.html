@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelCraft Engine — Animation Example</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0f0f23;
+      color: #ccc;
+      padding: 24px;
+    }
+    h1 { color: #a7f070; margin-bottom: 4px; }
+    .subtitle { color: #555; font-size: 0.85rem; margin-bottom: 24px; }
+    h2 { color: #41a6f6; font-size: 1.1rem; margin: 24px 0 12px; }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .demo {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #333;
+    }
+    .demo h3 { color: #ffcd75; font-size: 0.9rem; margin-bottom: 4px; }
+    .demo p { color: #888; font-size: 0.75rem; margin-bottom: 8px; }
+    canvas, img {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      border: 1px solid #333;
+    }
+    .checkerboard {
+      background: repeating-conic-gradient(#222 0% 25%, #2a2a2a 0% 50%) 50% / 16px 16px;
+    }
+    pre {
+      background: #0a0a1a;
+      color: #a7f070;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      margin: 12px 0;
+      border: 1px solid #222;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .controls button {
+      background: #29366f;
+      color: #e0e0e0;
+      border: 1px solid #3b5dc9;
+      border-radius: 4px;
+      padding: 4px 12px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .controls button:hover { background: #3b5dc9; }
+    .info { color: #41a6f6; font-size: 0.8rem; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>🎬 PixelCraft Engine — Animation</h1>
+  <p class="subtitle">Frame-based animation, requestAnimationFrame, per-frame timing, GIF export.</p>
+
+  <h2>1. Basic Animation (palette shift)</h2>
+  <pre>
+const anim = new Animation({
+  frames: [frame1, frame2, frame3, frame4],
+  fps: 3,
+});
+anim.play(canvas, { scale: 8 });</pre>
+  <div class="grid" id="basic-anim"></div>
+
+  <h2>2. Rotation Animation</h2>
+  <pre>
+const frames = [sprite, sprite.clone().rotate90(), sprite.clone().rotate180(), sprite.clone().rotate270()];
+const anim = new Animation({ frames, fps: 4 });</pre>
+  <div class="grid" id="rotation-anim"></div>
+
+  <h2>3. Per-Frame Duration</h2>
+  <pre>
+const anim = new Animation({
+  frames: [
+    { sprite: frame1, duration: 200 },   // fast
+    { sprite: frame2, duration: 1000 },  // slow hold
+    { sprite: frame3, duration: 200 },   // fast
+  ],
+});</pre>
+  <div class="grid" id="duration-anim"></div>
+
+  <h2>4. Slow Animation (FPS = 0.5)</h2>
+  <pre>const anim = new Animation({ frames, fps: 0.5 }); // 2 seconds per frame</pre>
+  <div class="grid" id="slow-anim"></div>
+
+  <h2>5. Playback Controls</h2>
+  <div class="grid" id="controls-anim"></div>
+
+  <h2>6. Animated GIF Export</h2>
+  <pre>
+const gifDataURL = animationToGIFDataURL(anim, { scale: 8 });
+// → plays back as animated GIF in any browser/viewer</pre>
+  <div class="grid" id="gif-anim"></div>
+
+  <h2>7. SpriteSheet ↔ Animation</h2>
+  <pre>
+// Export animation frames as spritesheet
+const sheet = SpriteSheet.fromAnimation(anim);
+// Import spritesheet back as animation
+const restoredAnim = sheet.toAnimation({ fps: 4 });</pre>
+  <div class="grid" id="sheet-anim"></div>
+
+  <script type="module">
+    import {
+      PixelSprite,
+      Palette,
+      Animation,
+      SpriteSheet,
+      animationToGIFDataURL,
+      encodeAnimatedGIF,
+      TRANSPARENT,
+    } from "../src/index.js";
+
+    // ─── Helpers ─────────────────────────────────────
+    function card(containerId, title, desc) {
+      const el = document.createElement("div");
+      el.className = "demo";
+      el.innerHTML = `<h3>${title}</h3>${desc ? `<p>${desc}</p>` : ""}`;
+      document.getElementById(containerId).appendChild(el);
+      return el;
+    }
+    function addCanvas(parent) {
+      const cv = document.createElement("canvas");
+      cv.className = "checkerboard";
+      parent.appendChild(cv);
+      return cv;
+    }
+
+    // ─── Sprite Data ─────────────────────────────────
+    const heartPalette = ["#00000000", "#ff0044", "#ff6688"];
+    const heartData = [
+      0,0,0,0,0,0,0,0,
+      0,1,1,0,0,1,1,0,
+      1,2,1,1,1,1,2,1,
+      1,1,1,1,1,1,1,1,
+      1,1,1,1,1,1,1,1,
+      0,1,1,1,1,1,1,0,
+      0,0,1,1,1,1,0,0,
+      0,0,0,1,1,0,0,0,
+    ];
+
+    const swordPalette = ["#00000000", "#94b0c2", "#f4f4f4", "#5d275d"];
+    const swordData = [
+      0,0,0,0,0,0,1,0,
+      0,0,0,0,0,1,2,1,
+      0,0,0,0,1,2,1,0,
+      0,0,0,1,2,1,0,0,
+      0,3,1,2,1,0,0,0,
+      0,3,3,1,0,0,0,0,
+      3,0,3,0,0,0,0,0,
+      0,3,0,0,0,0,0,0,
+    ];
+
+    const treePalette = ["#00000000", "#38b764", "#5d275d"];
+    const treeData = [
+      0,0,0,1,1,0,0,0,
+      0,0,1,1,1,1,0,0,
+      0,1,1,1,1,1,1,0,
+      1,1,1,1,1,1,1,1,
+      0,1,1,1,1,1,1,0,
+      0,0,0,2,2,0,0,0,
+      0,0,0,2,2,0,0,0,
+      0,0,0,2,2,0,0,0,
+    ];
+
+    // ─── 1. Basic Animation ──────────────────────────
+    const palettes = [
+      ["#00000000", "#ff0044", "#ff6688"],
+      ["#00000000", "#ff6688", "#ffaacc"],
+      ["#00000000", "#ff0044", "#ff6688"],
+      ["#00000000", "#cc0033", "#ff0044"],
+    ];
+    const heartFrames = palettes.map(p =>
+      PixelSprite.fromGrid({ width: 8, height: 8, palette: p, data: heartData })
+    );
+    const heartAnim = new Animation({ frames: heartFrames, fps: 3 });
+    const c1 = card("basic-anim", "💗 Pulsing Heart", "4 frames, palette shift, 3 FPS");
+    heartAnim.play(addCanvas(c1), { scale: 8 });
+
+    // ─── 2. Rotation Animation ───────────────────────
+    const swordBase = PixelSprite.fromGrid({ width: 8, height: 8, palette: swordPalette, data: swordData });
+    const rotFrames = [
+      swordBase,
+      swordBase.clone().rotate90(),
+      swordBase.clone().rotate180(),
+      swordBase.clone().rotate270(),
+    ];
+    const rotAnim = new Animation({ frames: rotFrames, fps: 4 });
+    const c2 = card("rotation-anim", "⚔️ Spinning Sword", "4 rotation frames @ 4fps");
+    rotAnim.play(addCanvas(c2), { scale: 8 });
+
+    // ─── 3. Per-Frame Duration ───────────────────────
+    const tree1 = PixelSprite.fromGrid({ width: 8, height: 8, palette: treePalette, data: treeData });
+    const tree2 = tree1.clone().flipHorizontal();
+    const durAnim = new Animation({
+      frames: [
+        { sprite: tree1, duration: 200 },
+        { sprite: tree2, duration: 1000 },
+        { sprite: tree1, duration: 200 },
+      ],
+    });
+    const c3 = card("duration-anim", "🌲 Sway (variable timing)", "200ms → 1000ms → 200ms");
+    durAnim.play(addCanvas(c3), { scale: 8 });
+
+    // ─── 4. Slow Animation ───────────────────────────
+    const slowFrames = [
+      PixelSprite.fromGrid({ width: 8, height: 8, palette: ["#00000000", "#ff0044", "#ff6688"], data: heartData }),
+      PixelSprite.fromGrid({ width: 8, height: 8, palette: ["#00000000", "#0088ff", "#44aaff"], data: heartData }),
+    ];
+    const slowAnim = new Animation({ frames: slowFrames, fps: 0.5 });
+    const c4 = card("slow-anim", "🐢 Slow Pulse", "FPS = 0.5 → 2 seconds per frame");
+    const cv4 = addCanvas(c4);
+    slowAnim.play(cv4, { scale: 8 });
+    const info4 = document.createElement("div");
+    info4.className = "info";
+    info4.textContent = `Total duration: ${slowAnim.totalDuration}ms`;
+    c4.appendChild(info4);
+
+    // ─── 5. Playback Controls ────────────────────────
+    const ctrlFrames = heartFrames.map(f => f.clone());
+    const ctrlAnim = new Animation({ frames: ctrlFrames, fps: 3 });
+    const c5 = card("controls-anim", "🎮 Interactive", "Play / Pause / Stop / Step");
+    const cv5 = addCanvas(c5);
+
+    const controlsDiv = document.createElement("div");
+    controlsDiv.className = "controls";
+
+    const btnPlay = document.createElement("button");
+    btnPlay.textContent = "▶ Play";
+    btnPlay.onclick = () => ctrlAnim.play(cv5, { scale: 8 });
+
+    const btnPause = document.createElement("button");
+    btnPause.textContent = "⏸ Pause";
+    btnPause.onclick = () => ctrlAnim.pause();
+
+    const btnResume = document.createElement("button");
+    btnResume.textContent = "⏯ Resume";
+    btnResume.onclick = () => ctrlAnim.resume();
+
+    const btnStop = document.createElement("button");
+    btnStop.textContent = "⏹ Stop";
+    btnStop.onclick = () => ctrlAnim.stop();
+
+    const btnNext = document.createElement("button");
+    btnNext.textContent = "→ Next";
+    btnNext.onclick = () => ctrlAnim.nextFrame();
+
+    const btnPrev = document.createElement("button");
+    btnPrev.textContent = "← Prev";
+    btnPrev.onclick = () => ctrlAnim.prevFrame();
+
+    controlsDiv.append(btnPlay, btnPause, btnResume, btnStop, btnPrev, btnNext);
+    c5.appendChild(controlsDiv);
+
+    const frameInfo = document.createElement("div");
+    frameInfo.className = "info";
+    c5.appendChild(frameInfo);
+    ctrlAnim.onFrame(idx => { frameInfo.textContent = `Frame: ${idx + 1}/${ctrlAnim.frameCount}`; });
+
+    // Initial render
+    ctrlAnim.renderFrame(cv5, 0, { scale: 8 });
+    frameInfo.textContent = `Frame: 1/${ctrlAnim.frameCount}`;
+
+    // ─── 6. Animated GIF ─────────────────────────────
+    const gifUrl = animationToGIFDataURL(heartAnim, { scale: 8 });
+    const c6 = card("gif-anim", "💗 Animated GIF", "Exported with own LZW encoder");
+    const img6 = document.createElement("img");
+    img6.src = gifUrl;
+    img6.width = 64; img6.height = 64;
+    c6.appendChild(img6);
+    const rawBytes = encodeAnimatedGIF(heartAnim, { scale: 8 });
+    const info6 = document.createElement("div");
+    info6.className = "info";
+    info6.textContent = `${rawBytes.length} bytes, ${heartAnim.frameCount} frames`;
+    c6.appendChild(info6);
+
+    // Rotation GIF
+    const rotGif = animationToGIFDataURL(rotAnim, { scale: 8 });
+    const c6b = card("gif-anim", "⚔️ Rotation GIF", "4-frame rotation exported");
+    const img6b = document.createElement("img");
+    img6b.src = rotGif;
+    img6b.width = 64; img6b.height = 64;
+    img6b.className = "checkerboard";
+    c6b.appendChild(img6b);
+
+    // ─── 7. SpriteSheet ↔ Animation ──────────────────
+    const sheet = SpriteSheet.fromAnimation(heartAnim);
+    const c7 = card("sheet-anim", "📦 SpriteSheet Export", `${sheet.columns}×${sheet.rows} grid`);
+    const cv7 = addCanvas(c7);
+    sheet.toSprite().renderToCanvas(cv7, { scale: 6 });
+    const info7 = document.createElement("div");
+    info7.className = "info";
+    info7.textContent = `${sheet.count} cells, ${sheet.width}×${sheet.height}px`;
+    c7.appendChild(info7);
+
+    // Round-trip: sheet → animation
+    const restoredAnim = sheet.toAnimation({ fps: 3 });
+    const c7b = card("sheet-anim", "🔄 Restored Animation", "sheet.toAnimation() plays back");
+    restoredAnim.play(addCanvas(c7b), { scale: 8 });
+  </script>
+</body>
+</html>

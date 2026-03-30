@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelCraft Engine — Basic Example</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0f0f23;
+      color: #ccc;
+      padding: 24px;
+    }
+    h1 { color: #a7f070; margin-bottom: 4px; }
+    .subtitle { color: #555; font-size: 0.85rem; margin-bottom: 24px; }
+    h2 { color: #41a6f6; font-size: 1.1rem; margin: 24px 0 12px; }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .demo {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #333;
+    }
+    .demo h3 { color: #ffcd75; font-size: 0.9rem; margin-bottom: 4px; }
+    .demo p { color: #888; font-size: 0.75rem; margin-bottom: 8px; }
+    canvas, img {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      border: 1px solid #333;
+    }
+    .checkerboard {
+      background: repeating-conic-gradient(#222 0% 25%, #2a2a2a 0% 50%) 50% / 16px 16px;
+    }
+    .svg-box svg { display: block; border: 1px solid #333; }
+    pre {
+      background: #0a0a1a;
+      color: #a7f070;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      margin: 12px 0;
+      border: 1px solid #222;
+    }
+    .info { color: #41a6f6; font-size: 0.8rem; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>🎮 PixelCraft Engine — Basic</h1>
+  <p class="subtitle">Static sprites, palettes, transforms, SVG & GIF export. No build step needed.</p>
+
+  <h2>1. Sprite from Grid (palette indices)</h2>
+  <pre>
+const sprite = PixelSprite.fromGrid({
+  width: 8, height: 8,
+  palette: ["#00000000", "#ff0044", "#ff6688"],
+  data: [0,0,0,0,0,0,0,0, 0,1,1,0,0,1,1,0, ...]
+});
+sprite.renderToCanvas(canvas, { scale: 8 });</pre>
+  <div class="grid" id="sprites"></div>
+
+  <h2>2. Preset Palettes</h2>
+  <pre>
+const gb = Palette.presets.gameboy;  // 4 colors
+const nes = Palette.presets.nes;     // 16 colors
+const gs = Palette.presets.grayscale; // 12 shades</pre>
+  <div class="grid" id="palettes"></div>
+
+  <h2>3. Transforms</h2>
+  <pre>
+sprite.flipHorizontal();
+sprite.rotate90();
+sprite.scale(2);  // nearest-neighbor</pre>
+  <div class="grid" id="transforms"></div>
+
+  <h2>4. SVG Export</h2>
+  <pre>const svgString = sprite.toSVG({ pixelSize: 8 });</pre>
+  <div class="grid" id="svg-export"></div>
+
+  <h2>5. GIF Export (zero dependencies!)</h2>
+  <pre>
+const gifDataURL = spriteToGIFDataURL(sprite, { scale: 8 });
+// → "data:image/gif;base64,R0lGODlh..."</pre>
+  <div class="grid" id="gif-export"></div>
+
+  <h2>6. SpriteSheet</h2>
+  <pre>
+const sheet = SpriteSheet.fromSprites([s1, s2, s3, s4], { columns: 4 });
+const composite = sheet.toSprite();
+composite.renderToCanvas(canvas, { scale: 4 });</pre>
+  <div class="grid" id="spritesheet"></div>
+
+  <script type="module">
+    import {
+      PixelSprite,
+      Palette,
+      Animation,
+      SpriteSheet,
+      spriteToGIFDataURL,
+      encodeGIF,
+      TRANSPARENT,
+    } from "../src/index.js";
+
+    // ─── Helper ──────────────────────────────────────
+    function card(containerId, title, desc) {
+      const el = document.createElement("div");
+      el.className = "demo";
+      el.innerHTML = `<h3>${title}</h3>${desc ? `<p>${desc}</p>` : ""}`;
+      document.getElementById(containerId).appendChild(el);
+      return el;
+    }
+
+    // ─── Sprite Data ─────────────────────────────────
+    const heartPalette = ["#00000000", "#ff0044", "#ff6688"];
+    const heartData = [
+      0,0,0,0,0,0,0,0,
+      0,1,1,0,0,1,1,0,
+      1,2,1,1,1,1,2,1,
+      1,1,1,1,1,1,1,1,
+      1,1,1,1,1,1,1,1,
+      0,1,1,1,1,1,1,0,
+      0,0,1,1,1,1,0,0,
+      0,0,0,1,1,0,0,0,
+    ];
+    const swordPalette = ["#00000000", "#94b0c2", "#f4f4f4", "#5d275d"];
+    const swordData = [
+      0,0,0,0,0,0,1,0,
+      0,0,0,0,0,1,2,1,
+      0,0,0,0,1,2,1,0,
+      0,0,0,1,2,1,0,0,
+      0,3,1,2,1,0,0,0,
+      0,3,3,1,0,0,0,0,
+      3,0,3,0,0,0,0,0,
+      0,3,0,0,0,0,0,0,
+    ];
+
+    // ─── 1. Sprites ──────────────────────────────────
+    const heart = PixelSprite.fromGrid({ width: 8, height: 8, palette: heartPalette, data: heartData });
+    const c1 = card("sprites", "❤️ Heart", "8×8, 3-color palette");
+    const cv1 = document.createElement("canvas");
+    cv1.className = "checkerboard";
+    c1.appendChild(cv1);
+    heart.renderToCanvas(cv1, { scale: 8 });
+
+    const sword = PixelSprite.fromGrid({ width: 8, height: 8, palette: swordPalette, data: swordData });
+    const c2 = card("sprites", "⚔️ Sword", "transparency");
+    const cv2 = document.createElement("canvas");
+    cv2.className = "checkerboard";
+    c2.appendChild(cv2);
+    sword.renderToCanvas(cv2, { scale: 8 });
+
+    // Direct hex colors (no palette)
+    const rainbow = PixelSprite.fromGrid({
+      width: 8, height: 1,
+      data: ["#ff0000","#ff8800","#ffff00","#00ff00","#0088ff","#0000ff","#8800ff","#ff00ff"],
+    });
+    const c3 = card("sprites", "🌈 Rainbow", "1×8 with direct hex");
+    const cv3 = document.createElement("canvas");
+    c3.appendChild(cv3);
+    rainbow.renderToCanvas(cv3, { scale: 32 });
+
+    // ─── 2. Palettes ─────────────────────────────────
+    for (const [name, pal] of Object.entries(Palette.presets)) {
+      const colors = pal.toArray();
+      const s = PixelSprite.fromGrid({
+        width: colors.length, height: 1,
+        data: colors,
+      });
+      const el = card("palettes", `🎨 ${name}`, `${colors.length} colors`);
+      const cv = document.createElement("canvas");
+      el.appendChild(cv);
+      s.renderToCanvas(cv, { scale: 24 });
+    }
+
+    // ─── 3. Transforms ──────────────────────────────
+    const original = sword.clone();
+    const flippedH = sword.clone().flipHorizontal();
+    const flippedV = sword.clone().flipVertical();
+    const rotated = sword.clone().rotate90();
+    const scaled = sword.clone().scale(2);
+
+    for (const [label, spr] of [
+      ["Original", original],
+      ["Flip H", flippedH],
+      ["Flip V", flippedV],
+      ["Rotate 90°", rotated],
+      ["Scale 2×", scaled],
+    ]) {
+      const el = card("transforms", label, `${spr.getWidth()}×${spr.getHeight()}`);
+      const cv = document.createElement("canvas");
+      cv.className = "checkerboard";
+      el.appendChild(cv);
+      spr.renderToCanvas(cv, { scale: label === "Scale 2×" ? 4 : 8 });
+    }
+
+    // ─── 4. SVG Export ───────────────────────────────
+    const svgStr = heart.toSVG({ pixelSize: 8 });
+    const el4 = card("svg-export", "❤️ SVG", "Vector output, infinitely scalable");
+    const svgBox = document.createElement("div");
+    svgBox.className = "svg-box";
+    svgBox.innerHTML = svgStr;
+    el4.appendChild(svgBox);
+    const info4 = document.createElement("div");
+    info4.className = "info";
+    info4.textContent = `${svgStr.length} bytes SVG`;
+    el4.appendChild(info4);
+
+    // ─── 5. GIF Export ───────────────────────────────
+    const heartGif = spriteToGIFDataURL(heart, { scale: 8 });
+    const el5 = card("gif-export", "❤️ GIF (static)", "Own LZW encoder, zero deps");
+    const img5 = document.createElement("img");
+    img5.src = heartGif;
+    img5.width = 64; img5.height = 64;
+    el5.appendChild(img5);
+    const rawBytes = encodeGIF(heart, { scale: 8 });
+    const info5 = document.createElement("div");
+    info5.className = "info";
+    info5.textContent = `${rawBytes.length} bytes raw GIF`;
+    el5.appendChild(info5);
+
+    const swordGif = spriteToGIFDataURL(sword, { scale: 8 });
+    const el5b = card("gif-export", "⚔️ GIF (transparency)", "Alpha → GIF transparency bit");
+    const img5b = document.createElement("img");
+    img5b.src = swordGif;
+    img5b.width = 64; img5b.height = 64;
+    img5b.className = "checkerboard";
+    el5b.appendChild(img5b);
+
+    // ─── 6. SpriteSheet ──────────────────────────────
+    const sprites6 = [
+      heart.clone(),
+      sword.clone(),
+      heart.clone().flipHorizontal(),
+      sword.clone().rotate90(),
+    ];
+    const sheet = SpriteSheet.fromSprites(sprites6, { columns: 4, paddingX: 1 });
+    const composite = sheet.toSprite();
+    const el6 = card("spritesheet", "📦 4-Cell Sheet", `${sheet.width}×${sheet.height}px`);
+    const cv6 = document.createElement("canvas");
+    cv6.className = "checkerboard";
+    el6.appendChild(cv6);
+    composite.renderToCanvas(cv6, { scale: 6 });
+
+    // JSON round-trip
+    const json = sheet.toJSON();
+    const restored = SpriteSheet.fromJSON(json);
+    const el6b = card("spritesheet", "🔄 JSON Round-trip", `${restored.count} sprites restored`);
+    const cv6b = document.createElement("canvas");
+    cv6b.className = "checkerboard";
+    el6b.appendChild(cv6b);
+    restored.toSprite().renderToCanvas(cv6b, { scale: 6 });
+  </script>
+</body>
+</html>

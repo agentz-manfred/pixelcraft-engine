@@ -79,20 +79,28 @@ pixelcraft-engine/
 - [x] Animiertes Canvas-Rendering (requestAnimationFrame)
 - [x] Transform-Utilities (flipH, flipV, rotate90, scale)
 - [x] `SpriteSheet` — Import/Export von Spritesheets ✅
-- [x] Unit Tests (107 Tests, alle grün) ✅
+- [x] Unit Tests (190 Tests, alle grün) ✅
+- [x] Edge-Case Tests (1×1, large, FPS, alpha, concurrent) ✅
+- [x] Renderer Tests (SVG optimization, GIF edge cases) ✅
 - [x] Playground (Dev-Server mit Sprite-Demos) ✅
+- [x] Beispiel-Dateien (examples/basic.html, examples/animation.html) ✅
+- [x] Playwright Visual Tests (render.spec.ts) ✅
+- [x] SVG Renderer optimiert (RLE Rect-Merging für kleinere SVGs) ✅
+- [x] Animation rAF Background-Tab Handling (modulo-basiert) ✅
 
 ### Phase 3 — Polish, Docs & React (Cron 3)
 - [ ] `JSONFormat` — Sprites als JSON laden/speichern (mit Palette-Referenz)
-- [ ] React-Component `<PixelSprite />`
-- [ ] Vorgefertigte Paletten (GameBoy, NES, Büro Royale, Grayscale)
+- [ ] React-Component `<PixelSprite />` (bereits angelegt, muss getestet werden)
 - [ ] Playground (Dev-Server mit Live-Editor)
-- [ ] Beispiel-Dateien (basic.html, animation.html, gallery.html)
+- [x] Vorgefertigte Paletten (GameBoy, NES, Büro Royale, Grayscale) ✅ (Phase 1)
+- [x] Beispiel-Dateien: examples/basic.html, examples/animation.html ✅ (Phase 2)
 - [ ] Vollständige README mit Beispielen
 - [ ] API-Dokumentation
-- [ ] Playwright Visual Tests (Canvas-Output, Animation-Timing)
+- [x] Playwright Visual Tests (Canvas-Output, SVG, GIF) ✅ (Phase 2)
 - [ ] npm-Package Konfiguration (exports, types, peer-deps)
-- [ ] Edge Cases: 0x0 Sprites, riesige Sprites, ungültige Farben, leere Frames
+- [x] Edge Cases: 1×1 Sprites, Large Sprites, FPS edge cases, Transparenz, Concurrent ops ✅ (Phase 2, 72+ Tests)
+- [x] SVG Renderer optimiert (RLE Rect-Merging) ✅ (Phase 2)
+- [x] Animation rAF Background-Tab Handling (time-based modulo) ✅ (Phase 2)
 
 ## API Design
 

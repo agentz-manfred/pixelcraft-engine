@@ -241,19 +241,46 @@ export class PixelSprite {
   }
 
   /** Export as SVG string */
-  toSVG(options: { pixelSize?: number } = {}): string {
-    const { pixelSize = 1 } = options;
+  toSVG(options: { pixelSize?: number; optimize?: boolean } = {}): string {
+    const { pixelSize = 1, optimize = true } = options;
     const w = this.buffer.width;
     const h = this.buffer.height;
     const rects: string[] = [];
 
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const color = this.buffer.getPixel(x, y);
-        if (color === TRANSPARENT) continue;
-        rects.push(
-          `<rect x="${x * pixelSize}" y="${y * pixelSize}" width="${pixelSize}" height="${pixelSize}" fill="${color.slice(0, 7)}"${color.length > 7 ? ` opacity="${(parseInt(color.slice(7), 16) / 255).toFixed(2)}"` : ""}/>`,
-        );
+    if (optimize) {
+      // Run-length optimization: merge consecutive same-color pixels in rows
+      for (let y = 0; y < h; y++) {
+        let x = 0;
+        while (x < w) {
+          const color = this.buffer.getPixel(x, y);
+          if (color === TRANSPARENT) { x++; continue; }
+          // Find run of same color
+          let runLen = 1;
+          while (x + runLen < w && this.buffer.getPixel(x + runLen, y) === color) {
+            runLen++;
+          }
+          const fill = color.slice(0, 7);
+          const alpha = color.length > 7 ? parseInt(color.slice(7), 16) : 255;
+          const opacityAttr = alpha < 255 ? ` opacity="${(alpha / 255).toFixed(2)}"` : "";
+          rects.push(
+            `<rect x="${x * pixelSize}" y="${y * pixelSize}" width="${runLen * pixelSize}" height="${pixelSize}" fill="${fill}"${opacityAttr}/>`,
+          );
+          x += runLen;
+        }
+      }
+    } else {
+      // Unoptimized: one rect per pixel
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const color = this.buffer.getPixel(x, y);
+          if (color === TRANSPARENT) continue;
+          const fill = color.slice(0, 7);
+          const alpha = color.length > 7 ? parseInt(color.slice(7), 16) : 255;
+          const opacityAttr = alpha < 255 ? ` opacity="${(alpha / 255).toFixed(2)}"` : "";
+          rects.push(
+            `<rect x="${x * pixelSize}" y="${y * pixelSize}" width="${pixelSize}" height="${pixelSize}" fill="${fill}"${opacityAttr}/>`,
+          );
+        }
       }
     }
 

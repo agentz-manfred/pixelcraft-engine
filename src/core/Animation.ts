@@ -192,8 +192,20 @@ export class Animation {
   private tick = (): void => {
     if (!this._playing || !this._canvas) return;
 
-    const elapsed = performance.now() - this._startTime;
+    let elapsed = performance.now() - this._startTime;
     const defaultDuration = 1000 / this._fps;
+    const total = this.totalDuration;
+
+    // Handle looping: use modulo so background-tab gaps are handled correctly.
+    // When requestAnimationFrame is throttled (background tabs), elapsed can
+    // far exceed totalDuration. Modulo ensures we pick the correct frame
+    // within the current cycle instead of resetting to 0 each loop.
+    if (this._loop && elapsed >= total) {
+      // Advance start time by full cycles so we keep correct phase
+      const fullCycles = Math.floor(elapsed / total);
+      this._startTime += fullCycles * total;
+      elapsed = performance.now() - this._startTime;
+    }
 
     // Calculate which frame we should be on
     let accumulated = 0;
@@ -205,13 +217,12 @@ export class Animation {
         break;
       }
       if (i === this.frames.length - 1) {
-        if (this._loop) {
-          // Loop: restart timing
-          this._startTime = performance.now();
-          targetFrame = 0;
-        } else {
+        if (!this._loop) {
           targetFrame = this.frames.length - 1;
           this._playing = false;
+        } else {
+          // Fallback: shouldn't normally reach here due to modulo above
+          targetFrame = 0;
         }
       }
     }
