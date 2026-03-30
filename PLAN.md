@@ -64,22 +64,23 @@ pixelcraft-engine/
 
 ### Phase 1 — Core Engine ✅ (Cron 1)
 - [x] Projekt-Setup (Vite Library Mode, TypeScript, Vitest)
-- [ ] `PixelBuffer` — Raw Pixel-Daten mit get/set/fill
-- [ ] `Palette` — Farbpaletten laden (JSON, inline), Index↔Color Mapping
-- [ ] `PixelSprite` — Haupt-API: fromGrid(), fromJSON(), Pixel-Manipulation
-- [ ] `CanvasRenderer` — Rendern auf HTML5 Canvas mit Skalierung
-- [ ] Unit Tests für alles oben
-- [ ] Color Utilities (Hex↔RGB↔HSL)
+- [x] `PixelBuffer` — Raw Pixel-Daten mit get/set/fill
+- [x] `Palette` — Farbpaletten laden (JSON, inline), Index↔Color Mapping
+- [x] `PixelSprite` — Haupt-API: fromGrid(), fromJSON(), Pixel-Manipulation
+- [x] `CanvasRenderer` — Rendern auf HTML5 Canvas mit Skalierung
+- [x] Unit Tests für alles oben
+- [x] Color Utilities (Hex↔RGB↔HSL)
 
-### Phase 2 — Animation & Export (Cron 2)
-- [ ] `Animation` — Frame-Array, FPS, Timing-Berechnung, play/pause/stop
-- [ ] `PNGRenderer` — Canvas → PNG Blob/DataURL
-- [ ] `SVGRenderer` — Pixel → SVG Rect-Elemente
-- [ ] `GIFRenderer` — Eigener GIF89a Encoder (LZW, zero-dependency!)
-- [ ] Animiertes Canvas-Rendering (requestAnimationFrame)
-- [ ] Transform-Utilities (flipH, flipV, rotate90, scale)
-- [ ] `SpriteSheet` — Import/Export von Spritesheets
-- [ ] Unit Tests + erste visuelle Tests
+### Phase 2 — Animation & Export ✅ (Cron 1+2)
+- [x] `Animation` — Frame-Array, FPS, Timing-Berechnung, play/pause/stop
+- [x] `PNGRenderer` — Canvas → PNG Blob/DataURL
+- [x] `SVGRenderer` — Pixel → SVG Rect-Elemente
+- [x] `GIFRenderer` — Eigener GIF89a Encoder (LZW, zero-dependency!) ✅
+- [x] Animiertes Canvas-Rendering (requestAnimationFrame)
+- [x] Transform-Utilities (flipH, flipV, rotate90, scale)
+- [x] `SpriteSheet` — Import/Export von Spritesheets ✅
+- [x] Unit Tests (107 Tests, alle grün) ✅
+- [x] Playground (Dev-Server mit Sprite-Demos) ✅
 
 ### Phase 3 — Polish, Docs & React (Cron 3)
 - [ ] `JSONFormat` — Sprites als JSON laden/speichern (mit Palette-Referenz)

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelCraft Engine — Playground</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+    h1 { color: #a7f070; font-size: 1.6rem; margin-bottom: 4px; }
+    h2 { color: #41a6f6; font-size: 1.1rem; margin: 20px 0 8px; }
+    .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 20px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .card {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #333;
+    }
+    .card h3 {
+      color: #ffcd75;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+    .card p {
+      color: #999;
+      font-size: 0.8rem;
+      margin-bottom: 8px;
+    }
+    canvas {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      border: 1px solid #333;
+      background: repeating-conic-gradient(#222 0% 25%, #2a2a2a 0% 50%) 50% / 16px 16px;
+    }
+    img {
+      display: block;
+      image-rendering: pixelated;
+      border: 1px solid #333;
+    }
+    .svg-container svg {
+      display: block;
+      border: 1px solid #333;
+    }
+    #status {
+      background: #0f3460;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-top: 16px;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 PixelCraft Engine</h1>
+  <p class="subtitle">Lightweight pixel art engine — zero dependencies</p>
+
+  <h2>🖼️ Static Sprites</h2>
+  <div class="grid" id="static-sprites"></div>
+
+  <h2>🎬 Animations</h2>
+  <div class="grid" id="animations"></div>
+
+  <h2>📦 SpriteSheet</h2>
+  <div class="grid" id="spritesheets"></div>
+
+  <h2>🖨️ Export Formats</h2>
+  <div class="grid" id="exports"></div>
+
+  <div id="status">Loading...</div>
+
+  <script type="module" src="./playground.ts"></script>
+</body>
+</html>

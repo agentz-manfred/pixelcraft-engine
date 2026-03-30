@@ -37,9 +37,23 @@ export type { CanvasRenderOptions } from "./renderers/CanvasRenderer.js";
 export { renderToSVG, renderSVGToElement } from "./renderers/SVGRenderer.js";
 export type { SVGRenderOptions } from "./renderers/SVGRenderer.js";
 
+export { renderToPNGDataURL, renderToPNG } from "./renderers/PNGRenderer.js";
+export type { PNGRenderOptions } from "./renderers/PNGRenderer.js";
+
+export {
+  encodeGIF,
+  encodeAnimatedGIF,
+  spriteToGIFDataURL,
+  animationToGIFDataURL,
+} from "./renderers/GIFRenderer.js";
+export type { GIFOptions } from "./renderers/GIFRenderer.js";
+
 // Formats
 export { spriteFromJSON, animationFromJSON, animationFromObject } from "./formats/JSONFormat.js";
 export type { AnimationJSON } from "./formats/JSONFormat.js";
+
+export { SpriteSheet } from "./formats/SpriteSheet.js";
+export type { SpriteSheetLayout, SpriteSheetJSON } from "./formats/SpriteSheet.js";
 
 // Utils
 export { normalizeHex, hexToRGB, rgbToHex, hexToHSL, isValidHex, TRANSPARENT } from "./utils/color.js";
